@@ -4,6 +4,7 @@ open System.Text.RegularExpressions
 
 type TokenType =
   | TClass of string
+  | TNewLine of string // One used when formating the code
   | TPublic of string
   | TGlobal of string
   | TOpen of string
@@ -13,22 +14,6 @@ type TokenType =
   | TStringType of string
   | TAnnotation of string
 
-type ComplexTokens =
-  | TClassDeclaration
-  | TPropertyDeclaration
-
-type TClassDeclaration = {
-  visibility: string  // option?
-  name: string
-  annotations: string // list option?
-}
-// What was I even thinking??????????????????
-
-// type TokenUnit = {
-//   tokenType: TokenType;
-//   literal: string
-// }
-
 // TODO: Do I need to set a context?
 type Token = {
   // Before: Option<TokenUnit>
@@ -37,7 +22,7 @@ type Token = {
 }
 
 // TODO: That is really insuficient (o_o ")
-let SplitSpaces (line: String) = line.Split(' ')
+let SplitSpaces (line: String) = line.Replace(";", " ; ").Split(' ')
 
 let isEmptyString x = if x.Equals("") then false else true
 let debug x = printfn "%A" x
@@ -48,11 +33,11 @@ let tokenType x =
   | "class" -> TClass "class"
   | "public" -> TPublic "public"
   | "global" -> TGlobal "global"
-  | y when Regex.Match(y,@"^@.+").Success ->
-    TAnnotation y
+  | y when y.StartsWith("@") -> TAnnotation y
   | "string" -> TStringType "string"
   | "{" -> TOpen "{"
   | "}" -> TClose "}"
+  | ";" -> TComma ";"
   | _ -> TLiteral x
 
 let nextToken x =
@@ -70,24 +55,15 @@ let ident x = String.replicate (x * 4) " "
 
 let render x =
   match x with
-  | Some token -> printf "%A" (Some token::Current)
-  | None -> printf "None"
+  | Some {Current=a; Next=b} -> printfn "%A" (Option.get a)
+  | None -> printfn "None"
 
 // TODO: It should validate tokens and check syntax
 //       altought tokens are valid, the structure can be wrong.
 let rec output identationLevel tokens =
   match tokens with
   | [] -> render None
-  | x::xs -> render x
-  // | (TClass x)::rest -> x + " " + (ident identationLevel)::output identationLevel rest
-  // | (TPublic x)::rest -> (ident identationLevel) + x + " "::output identationLevel rest
-  // | (TLiteral x)::rest -> x + " "::output identationLevel rest
-  // | (TClose x)::rest -> "}\n"::output (identationLevel - 1) rest
-  // | (TStringType x)::rest -> x + " "::output identationLevel rest
-  // | (TGlobal x)::rest -> (ident identationLevel) + x + " "::output identationLevel rest
-  // | (TOpen x)::rest -> "{\n"::output (identationLevel + 1) rest
-  // | _::xs -> []
-
+  | x::xs -> render (Some x); output identationLevel xs
 
 // TODO: refactor
 File.ReadAllLines(@"example_class.cls")
@@ -97,5 +73,3 @@ File.ReadAllLines(@"example_class.cls")
   |> Seq.toList
   |> tokenize
   |> output 0
-  // |> debug  
-
