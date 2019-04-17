@@ -42,7 +42,7 @@ let tokenType x =
 let nextToken x =
   match x with
   | [] -> None
-  | x::xs -> Some (tokenType x)
+  | x::_ -> Some (tokenType x)
 
 // How to I get the previous token
 let rec tokenize text =
@@ -65,9 +65,7 @@ let rec output identationLevel tokens =
   | x::xs -> render (Some x); output identationLevel xs
 
 // TODO: refactor
-File.ReadAllLines(@"example_class.cls")
-  |> Seq.map SplitSpaces
-  |> Seq.concat
+(Seq.collect SplitSpaces (File.ReadAllLines(@"example_class.cls")))
   |> Seq.filter isEmptyString
   |> Seq.toList
   |> tokenize
