@@ -1,6 +1,5 @@
 open System
 open System.IO
-open System.Text.RegularExpressions
 
 type TokenType =
   | TClass of string
@@ -24,7 +23,7 @@ type Token = {
 // TODO: That is really insuficient (o_o ")
 let SplitSpaces (line: String) = line.Replace(";", " ; ").Split(' ')
 
-let isEmptyString x = if x.Equals("") then false else true
+let isEmptyString x = not (x.Equals(""))
 let debug x = printfn "%A" x
 // let debugToken x = for i in x do printf "%As" i
 
