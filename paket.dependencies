@@ -1,0 +1,8 @@
+source https://www.nuget.org/api/v2/
+
+frameworks: net46, netstandard2.0, netcoreapp2.0
+
+nuget FSharp.Formatting
+nuget FsLexYacc 8.0.1
+nuget FSharp.Core 4.3.4
+nuget FParsec 1.0.4-RC3
