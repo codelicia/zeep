@@ -1,0 +1,6 @@
+.paket/
+.fake/
+obj/
+packages/
+packet-files/
+*.fsx.lock
