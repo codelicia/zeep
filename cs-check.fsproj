@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>cs_check</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="tokenizer.fsi" />
+    <Compile Include="tokenizer.fsx" />
+  </ItemGroup>
+
+</Project>
