@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="tokenizer.fsi" />
     <Compile Include="tokenizer.fsx" />
+    <Compile Include="src\TokenizeClass.fs" />
   </ItemGroup>
 
 </Project>
