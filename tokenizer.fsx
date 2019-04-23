@@ -1,72 +1,29 @@
-open System
-open System.IO
+#r @"./packages/FParsec/lib/net40-client/FParsecCS.dll"
+#r @"./packages/FParsec/lib/net40-client/FParsec.dll"
 
-type TokenType =
-  | TClass of string
-  | TNewLine of string // One used when formating the code
-  | TPublic of string
-  | TGlobal of string
-  | TOpen of string
-  | TClose of string
-  | TComma of string
-  | TLiteral of string
-  | TStringType of string
-  | TAnnotation of string
+open FParsec
 
-// TODO: Do I need to set a context?
-type Token = {
-  // Before: Option<TokenUnit>
-  Current: Option<TokenType>
-  Next: Option<TokenType>
-}
+let TClass = pstring "class"
+let TPublic = pstring "public"
+// let TProtected = pstring "protected"
+let TPrivate = pstring "private"
+let TGlobal = pstring "global"
+let TVisibility = (spaces >>. (TPublic <|> TPrivate <|> TGlobal) .>> spaces)
 
-// TODO: That is really insuficient (o_o ")
-let SplitSpaces (line: String) = line.Replace(";", " ; ").Split(' ')
+let TWith = pstring "with"
+let TWithout = pstring "without"
+let TSharing = pstring "sharing"
 
-let isEmptyString x = not (x.Equals(""))
-let debug x = printfn "%A" x
-// let debugToken x = for i in x do printf "%As" i
+let TSharingMode = (spaces >>. ((TWithout <|> TWith) .>> spaces .>> TSharing) .>> spaces)
 
-let tokenType x =
-  match x with
-  | "class" -> TClass "class"
-  | "public" -> TPublic "public"
-  | "global" -> TGlobal "global"
-  | y when y.StartsWith("@") -> TAnnotation y
-  | "string" -> TStringType "string"
-  | "{" -> TOpen "{"
-  | "}" -> TClose "}"
-  | ";" -> TComma ";"
-  | _ -> TLiteral x
+let str s = pstring s
+let floatBetweenBrackets : Parser<float, unit> = str "[" >>. pfloat .>> str "]"
 
-let nextToken x =
-  match x with
-  | [] -> None
-  | x::_ -> Some (tokenType x)
+let classParser : Parser<string, unit> = TVisibility >>. TSharingMode .>> TClass .>> spaces
 
-// How to I get the previous token
-let rec tokenize text =
-  match text with
-  | [] -> []
-  | x::xs -> ({Current=Some (tokenType x); Next=nextToken xs})::tokenize xs
+let test p str =
+    match run p str with
+    | Success(result, _, _)   -> printfn "Success: %A" result
+    | Failure(errorMsg, _, _) -> printfn "Failure: %s" errorMsg
 
-let ident x = String.replicate (x * 4) " "
-
-let render x =
-  match x with
-  | Some {Current=a; Next=b} -> printfn "%A" (Option.get a)
-  | None -> printfn "None"
-
-// TODO: It should validate tokens and check syntax
-//       altought tokens are valid, the structure can be wrong.
-let rec output identationLevel tokens =
-  match tokens with
-  | [] -> render None
-  | x::xs -> render (Some x); output identationLevel xs
-
-// TODO: refactor
-(Seq.collect SplitSpaces (File.ReadAllLines(@"example_class.cls")))
-  |> Seq.filter isEmptyString
-  |> Seq.toList
-  |> tokenize
-  |> output 0
+test classParser "public with sharing class Foo {}";;
